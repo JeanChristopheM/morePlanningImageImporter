@@ -18,17 +18,6 @@ function resizeImage(image: HTMLImageElement): HTMLCanvasElement {
   const originalWidth = image.width;
   const originalHeight = image.height;
 
-  // If both dimensions are within the limit, do not resize
-  if (originalWidth <= CURRENT_SIZE && originalHeight <= CURRENT_SIZE) {
-    // Create a canvas with the exact size of the image
-    const canvas = document.createElement("canvas");
-    canvas.width = originalWidth;
-    canvas.height = originalHeight;
-    const context = canvas.getContext("2d")!;
-    context.drawImage(image, 0, 0, originalWidth, originalHeight);
-    return canvas;
-  }
-
   // Calculate the scaling factor to maintain the aspect ratio
   const scaleFactor = Math.min(
     CURRENT_SIZE / originalWidth,
@@ -161,6 +150,7 @@ async function processImage() {
 
     // Display the ASCII art in the output div
     document.getElementById("ascii-output")!.textContent = outputGrid;
+
     const asciiOutput = document.getElementById(
       "ascii-output"
     ) as HTMLTextAreaElement;
@@ -189,19 +179,25 @@ function updateCanvasScale(canvas: HTMLCanvasElement, scale: number) {
   processImage();
 }
 
-// . Handlers
-// . --------
-const handleFileUpload = (event: Event) => {
-  const files = (event.target as HTMLInputElement)?.files;
-  if (!files) return;
-  const file = files[0];
-  if (!file) return;
+const updateSliderValue = (value: number) => {
+  CURRENT_SIZE = value;
+  const scaleSlider = document.getElementById(
+    "scale-slider"
+  ) as HTMLInputElement;
+  scaleSlider.value = `${value}`;
+  const scaleValue = document.getElementById("scale-value") as HTMLSpanElement;
+  scaleValue.textContent = `${value}px`;
+};
 
+const loadImageAndUpdateVariables = (file: File) => {
   const reader = new FileReader();
   reader.onload = function (e) {
     const img = new Image();
     img.onload = function () {
       image = img;
+      updateSliderValue(
+        image.width > image.height ? image.width : image.height
+      );
       processImage();
     };
     img.src = e.target!.result as string;
@@ -209,27 +205,25 @@ const handleFileUpload = (event: Event) => {
   reader.readAsDataURL(file);
 };
 
+// . Handlers
+// . --------
+const handleFileUpload = (event: Event) => {
+  const files = (event.target as HTMLInputElement)?.files;
+  if (!files) return;
+  const file = files[0];
+  if (!file) return;
+  loadImageAndUpdateVariables(file);
+};
+
 const handlePaste = (event: ClipboardEvent) => {
   const items = event.clipboardData?.items;
   if (!items) return;
-
   for (const item of items) {
     // Check if the clipboard contains an image
     if (item.type.startsWith("image")) {
       const blob = item.getAsFile();
-      if (blob) {
-        // Read the image using FileReader
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          const img = new Image();
-          img.onload = function () {
-            image = img;
-            processImage();
-          };
-          img.src = e.target!.result as string;
-        };
-        reader.readAsDataURL(blob);
-      }
+      if (!blob) return;
+      loadImageAndUpdateVariables(blob);
     }
   }
 };
@@ -248,25 +242,24 @@ export const setup = () => {
   document
     .getElementById("map-select")
     ?.addEventListener("change", processImage);
-
-  // Add event listener for the scale slider
+  const previewCanvas = document.getElementById(
+    "preview-canvas"
+  ) as HTMLCanvasElement;
   const scaleSlider = document.getElementById(
     "scale-slider"
   ) as HTMLInputElement;
   const scaleValue = document.getElementById("scale-value") as HTMLSpanElement;
-  const previewCanvas = document.getElementById(
-    "preview-canvas"
-  ) as HTMLCanvasElement;
 
+  // Add event listener for the scale slider
   if (scaleSlider) {
     scaleSlider.addEventListener("input", () => {
       const scale = parseFloat(scaleSlider.value);
-      if (scale >= (image?.width || MAX_SIZE)) {
-        scaleSlider.value = `${image?.width || MAX_SIZE}`;
-        scaleValue.textContent = `${image?.width || MAX_SIZE}px`;
-      } else if (scale >= (image?.height || MAX_SIZE)) {
-        scaleSlider.value = `${image?.height || MAX_SIZE}`;
-        scaleValue.textContent = `${image?.height || MAX_SIZE}px`;
+      if (scale >= MAX_SIZE) {
+        scaleSlider.value = `${MAX_SIZE}`;
+        scaleValue.textContent = `${MAX_SIZE}px`;
+      } else if (scale >= MAX_SIZE) {
+        scaleSlider.value = `${MAX_SIZE}`;
+        scaleValue.textContent = `${MAX_SIZE}px`;
       } else scaleValue.textContent = `${scale}px`;
       updateCanvasScale(previewCanvas, scale);
     });
