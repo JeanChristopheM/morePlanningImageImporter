@@ -107,48 +107,48 @@ const handleFileUpload = (event: Event) => {
   reader.readAsDataURL(file);
 };
 
-const mapColor2 = (r: number, g: number, b: number) => {
-  // Calculate the brightness using a weighted average for human perception
-  const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+// const mapColor2 = (r: number, g: number, b: number) => {
+//   // Calculate the brightness using a weighted average for human perception
+//   const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
 
-  // Define a set of characters in increasing brightness order
-  const brightnessMapping = [
-    "j",
-    "i",
-    "h",
-    "g",
-    "f",
-    "e",
-    "d",
-    "c",
-    "b",
-    "a",
-    "-",
-  ];
+//   // Define a set of characters in increasing brightness order
+//   const brightnessMapping = [
+//     "j",
+//     "i",
+//     "h",
+//     "g",
+//     "f",
+//     "e",
+//     "d",
+//     "c",
+//     "b",
+//     "a",
+//     "-",
+//   ];
 
-  // Map the brightness to one of the defined characters
-  const index = Math.floor((brightness / 255) * (brightnessMapping.length - 1));
-  return brightnessMapping[index];
-};
+//   // Map the brightness to one of the defined characters
+//   const index = Math.floor((brightness / 255) * (brightnessMapping.length - 1));
+//   return brightnessMapping[index];
+// };
 
-const mapColor3 = (r: number, g: number, b: number) => {
-  // Calculate the hue using the RGB to HSL conversion formula
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  let hue = 0;
+// const mapColor3 = (r: number, g: number, b: number) => {
+//   // Calculate the hue using the RGB to HSL conversion formula
+//   const max = Math.max(r, g, b);
+//   const min = Math.min(r, g, b);
+//   let hue = 0;
 
-  if (max === min) hue = 0; // Grayscale case
-  else if (max === r) hue = (60 * ((g - b) / (max - min)) + 360) % 360;
-  else if (max === g) hue = 60 * ((b - r) / (max - min)) + 120;
-  else hue = 60 * ((r - g) / (max - min)) + 240;
+//   if (max === min) hue = 0; // Grayscale case
+//   else if (max === r) hue = (60 * ((g - b) / (max - min)) + 360) % 360;
+//   else if (max === g) hue = 60 * ((b - r) / (max - min)) + 120;
+//   else hue = 60 * ((r - g) / (max - min)) + 240;
 
-  // Define a set of characters to represent different hues
-  const hueMapping = ["c", "g", "b", "h", "f", "d", "e", "i", "j", "a"];
+//   // Define a set of characters to represent different hues
+//   const hueMapping = ["c", "g", "b", "h", "f", "d", "e", "i", "j", "a"];
 
-  // Normalize hue to fit in the range of the defined characters
-  const index = Math.floor((hue / 360) * hueMapping.length);
-  return hueMapping[index];
-};
+//   // Normalize hue to fit in the range of the defined characters
+//   const index = Math.floor((hue / 360) * hueMapping.length);
+//   return hueMapping[index];
+// };
 
 /**
  * Draws the ASCII text onto the preview canvas.
