@@ -1,7 +1,7 @@
 import { mapColor, mapColor2, mapColor3 } from "./colors";
 
 let image: HTMLImageElement | undefined = undefined;
-export const MAX_SIZE = 500;
+export const MAX_SIZE = 300;
 export let CURRENT_SIZE = 100;
 
 // . Utils
@@ -71,7 +71,7 @@ function drawPreview(asciiText: string, canvas: HTMLCanvasElement) {
     h: "#80008080", // Purple
     i: "#FFA50080", // Orange
     j: "#00000080", // Black
-    "-": "#FFFFFF80", // Pure white for empty space
+    "-": "#FFFFFF00", // Pure white for empty space
   };
 
   // Resize the canvas to accommodate the grid
@@ -195,9 +195,9 @@ const loadImageAndUpdateVariables = (file: File) => {
     const img = new Image();
     img.onload = function () {
       image = img;
-      updateSliderValue(
-        image.width > image.height ? image.width : image.height
-      );
+      const maxDimension = Math.max(img.width, img.height);
+      const clampedSize = Math.min(maxDimension, MAX_SIZE);
+      updateSliderValue(clampedSize);
       processImage();
     };
     img.src = e.target!.result as string;

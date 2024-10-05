@@ -1,15 +1,15 @@
 // Define the color mappings with RGB values
 const colorMapping = {
-  a: [128, 128, 128], // Gray
-  b: [0, 0, 255], // Blue
-  c: [0, 255, 0], // Green
-  d: [255, 0, 0], // Red
-  e: [255, 255, 0], // Yellow
-  f: [255, 192, 203], // Pink
-  g: [0, 255, 255], // Cyan
-  h: [128, 0, 128], // Purple
-  i: [255, 165, 0], // Orange
-  j: [0, 0, 0], // Black
+  a: [114, 109, 108], // Gray
+  b: [36, 101, 156], // Blue
+  c: [57, 112, 53], // Green
+  d: [166, 56, 47], // Red
+  e: [155, 140, 32], // Yellow
+  f: [176, 19, 160], // Pink
+  g: [8, 158, 154], // Cyan
+  h: [104, 21, 173], // Purple
+  i: [165, 105, 6], // Orange
+  j: [32, 30, 30], // Black
 };
 
 // Helper function to calculate Euclidean distance between two RGB colors
@@ -24,7 +24,7 @@ export const getColorDistance = (rgb1: number[], rgb2: number[]) => {
 // Function to map RGB values to corresponding ASCII character based on color distance
 export const mapColor = (r: number, g: number, b: number) => {
   // Check for pure white
-  if (r >= 245 && g >= 245 && b >= 245) return "-";
+  if (r >= 220 && g >= 220 && b >= 220) return "-";
 
   let closestColor = "a";
   let minDistance = Infinity;
