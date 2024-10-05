@@ -160,6 +160,7 @@ function drawPreview(asciiText: string, canvas: HTMLCanvasElement) {
   const context = canvas.getContext("2d");
 
   if (!context) return;
+  context.imageSmoothingEnabled = false; // Disable image smoothing
 
   // Define the size of each square and padding
   const squareSize = 7;
@@ -205,10 +206,14 @@ function drawPreview(asciiText: string, canvas: HTMLCanvasElement) {
       // Calculate the position to draw the square
       const posX = x * totalSize + canvasPadding / 2;
       const posY = y * totalSize + canvasPadding / 2;
+      // Introduce some randomness to the position for a more artistic effect
+      const randomOffset = Math.random() * 0.8;
+      const jitteredX = posX + randomOffset;
+      const jitteredY = posY + randomOffset;
 
       // Draw a filled square with the specified color
       context.fillStyle = color;
-      context.fillRect(posX, posY, squareSize, squareSize);
+      context.fillRect(jitteredX, jitteredY, squareSize, squareSize);
     }
   }
 }
