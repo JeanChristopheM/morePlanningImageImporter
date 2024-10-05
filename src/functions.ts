@@ -1,47 +1,11 @@
-// Define the color mappings with RGB values
-const colorMapping = {
-  a: [128, 128, 128], // Gray
-  b: [0, 0, 255], // Blue
-  c: [0, 255, 0], // Green
-  d: [255, 0, 0], // Red
-  e: [255, 255, 0], // Yellow
-  f: [255, 192, 203], // Pink
-  g: [0, 255, 255], // Cyan
-  h: [128, 0, 128], // Purple
-  i: [255, 165, 0], // Orange
-  j: [0, 0, 0], // Black
-};
+import { mapColor, mapColor2, mapColor3 } from "./colors";
 
-// Helper function to calculate Euclidean distance between two RGB colors
-const getColorDistance = (rgb1: number[], rgb2: number[]) => {
-  return Math.sqrt(
-    Math.pow(rgb1[0] - rgb2[0], 2) + // Red difference
-      Math.pow(rgb1[1] - rgb2[1], 2) + // Green difference
-      Math.pow(rgb1[2] - rgb2[2], 2) // Blue difference
-  );
-};
+let image: HTMLImageElement | undefined = undefined;
+export const MAX_SIZE = 500;
+export let CURRENT_SIZE = 100;
 
-// Function to map RGB values to corresponding ASCII character based on color distance
-const mapColor = (r: number, g: number, b: number) => {
-  // Check for pure white
-  if (r >= 245 && g >= 245 && b >= 245) return "-";
-
-  let closestColor = "a";
-  let minDistance = Infinity;
-
-  // Compare the pixel's RGB values to all the defined color mappings
-  for (const [char, rgbValues] of Object.entries(colorMapping)) {
-    const distance = getColorDistance([r, g, b], rgbValues);
-
-    // Find the color with the minimum distance
-    if (distance < minDistance) {
-      minDistance = distance;
-      closestColor = char;
-    }
-  }
-  return closestColor;
-};
-
+// . Utils
+// . ------
 /**
  * Resizes an image if it exceeds the maximum dimensions.
  * Otherwise, it returns the original image dimensions.
@@ -50,15 +14,12 @@ const mapColor = (r: number, g: number, b: number) => {
  * @returns {HTMLCanvasElement} - A canvas containing the resized image, if resized; otherwise, original.
  */
 function resizeImage(image: HTMLImageElement): HTMLCanvasElement {
-  // Define maximum dimensions
-  const maxSize = 250;
-
   // Get the original dimensions
   const originalWidth = image.width;
   const originalHeight = image.height;
 
   // If both dimensions are within the limit, do not resize
-  if (originalWidth <= maxSize && originalHeight <= maxSize) {
+  if (originalWidth <= CURRENT_SIZE && originalHeight <= CURRENT_SIZE) {
     // Create a canvas with the exact size of the image
     const canvas = document.createElement("canvas");
     canvas.width = originalWidth;
@@ -70,8 +31,8 @@ function resizeImage(image: HTMLImageElement): HTMLCanvasElement {
 
   // Calculate the scaling factor to maintain the aspect ratio
   const scaleFactor = Math.min(
-    maxSize / originalWidth,
-    maxSize / originalHeight
+    CURRENT_SIZE / originalWidth,
+    CURRENT_SIZE / originalHeight
   );
 
   // Calculate the new dimensions based on the scale factor
@@ -89,66 +50,6 @@ function resizeImage(image: HTMLImageElement): HTMLCanvasElement {
 
   return canvas;
 }
-
-const handleFileUpload = (event: Event) => {
-  const files = (event.target as HTMLInputElement)?.files;
-  if (!files) return;
-  const file = files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    const img = new Image();
-    img.onload = function () {
-      processImage(img);
-    };
-    img.src = e.target!.result as string;
-  };
-  reader.readAsDataURL(file);
-};
-
-const mapColor2 = (r: number, g: number, b: number) => {
-  // Calculate the brightness using a weighted average for human perception
-  const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
-
-  // Define a set of characters in increasing brightness order
-  const brightnessMapping = [
-    "j",
-    "i",
-    "h",
-    "g",
-    "f",
-    "e",
-    "d",
-    "c",
-    "b",
-    "a",
-    "-",
-  ];
-
-  // Map the brightness to one of the defined characters
-  const index = Math.floor((brightness / 255) * (brightnessMapping.length - 1));
-  return brightnessMapping[index];
-};
-
-const mapColor3 = (r: number, g: number, b: number) => {
-  // Calculate the hue using the RGB to HSL conversion formula
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  let hue = 0;
-
-  if (max === min) hue = 0; // Grayscale case
-  else if (max === r) hue = (60 * ((g - b) / (max - min)) + 360) % 360;
-  else if (max === g) hue = 60 * ((b - r) / (max - min)) + 120;
-  else hue = 60 * ((r - g) / (max - min)) + 240;
-
-  // Define a set of characters to represent different hues
-  const hueMapping = ["c", "g", "b", "h", "f", "d", "e", "i", "j", "a"];
-
-  // Normalize hue to fit in the range of the defined characters
-  const index = Math.floor((hue / 360) * hueMapping.length);
-  return hueMapping[index];
-};
 
 /**
  * Draws the ASCII text onto the preview canvas.
@@ -218,7 +119,8 @@ function drawPreview(asciiText: string, canvas: HTMLCanvasElement) {
   }
 }
 
-async function processImage(image: HTMLImageElement) {
+async function processImage() {
+  if (!image) return;
   try {
     // Resize the image if necessary (preserving aspect ratio)
     const resizedCanvas = resizeImage(image);
@@ -280,6 +182,33 @@ const copyToClipboard = () => {
   }
 };
 
+// Helper function to update the canvas size based on the slider value
+function updateCanvasScale(canvas: HTMLCanvasElement, scale: number) {
+  if (!canvas) return;
+  CURRENT_SIZE = scale;
+  processImage();
+}
+
+// . Handlers
+// . --------
+const handleFileUpload = (event: Event) => {
+  const files = (event.target as HTMLInputElement)?.files;
+  if (!files) return;
+  const file = files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const img = new Image();
+    img.onload = function () {
+      image = img;
+      processImage();
+    };
+    img.src = e.target!.result as string;
+  };
+  reader.readAsDataURL(file);
+};
+
 const handlePaste = (event: ClipboardEvent) => {
   const items = event.clipboardData?.items;
   if (!items) return;
@@ -294,7 +223,8 @@ const handlePaste = (event: ClipboardEvent) => {
         reader.onload = function (e) {
           const img = new Image();
           img.onload = function () {
-            processImage(img);
+            image = img;
+            processImage();
           };
           img.src = e.target!.result as string;
         };
@@ -304,6 +234,8 @@ const handlePaste = (event: ClipboardEvent) => {
   }
 };
 
+// . Setup
+// . -----
 export const setup = () => {
   // Add event listener for file input
   document
@@ -313,4 +245,30 @@ export const setup = () => {
   document
     .getElementById("copy-btn")
     ?.addEventListener("click", copyToClipboard);
+  document
+    .getElementById("map-select")
+    ?.addEventListener("change", processImage);
+
+  // Add event listener for the scale slider
+  const scaleSlider = document.getElementById(
+    "scale-slider"
+  ) as HTMLInputElement;
+  const scaleValue = document.getElementById("scale-value") as HTMLSpanElement;
+  const previewCanvas = document.getElementById(
+    "preview-canvas"
+  ) as HTMLCanvasElement;
+
+  if (scaleSlider) {
+    scaleSlider.addEventListener("input", () => {
+      const scale = parseFloat(scaleSlider.value);
+      if (scale >= (image?.width || MAX_SIZE)) {
+        scaleSlider.value = `${image?.width || MAX_SIZE}`;
+        scaleValue.textContent = `${image?.width || MAX_SIZE}px`;
+      } else if (scale >= (image?.height || MAX_SIZE)) {
+        scaleSlider.value = `${image?.height || MAX_SIZE}`;
+        scaleValue.textContent = `${image?.height || MAX_SIZE}px`;
+      } else scaleValue.textContent = `${scale}px`;
+      updateCanvasScale(previewCanvas, scale);
+    });
+  }
 };

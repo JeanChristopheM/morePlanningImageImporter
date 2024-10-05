@@ -134,7 +134,7 @@ label {
     font-weight: 500;
     text-decoration: underline;
   }
-  input {
+  input[type="file"] {
     position: absolute;
     opacity: 0;
     display: none;

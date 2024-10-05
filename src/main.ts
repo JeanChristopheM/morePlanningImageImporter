@@ -1,5 +1,5 @@
 import "./style.scss";
-import { setup } from "./functions";
+import { CURRENT_SIZE, MAX_SIZE, setup } from "./functions";
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 <h1>ASCII Image Converter</h1>
@@ -17,6 +17,11 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
       <option value="2">Brightness</option>
       <option value="3">HSL</option>
     </select>
+  </label>
+  <label for="scale-slider">
+    <span class="inputLabel">Image Scale:</span>
+    <input type="range" id="scale-slider" min="10" max="${MAX_SIZE}" step="1" value="${CURRENT_SIZE}">
+    <span id="scale-value">${CURRENT_SIZE}px</span>
   </label>
 </section>
 <div id="container">
