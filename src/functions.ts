@@ -150,6 +150,69 @@ const mapColor3 = (r: number, g: number, b: number) => {
   return hueMapping[index];
 };
 
+/**
+ * Draws the ASCII text onto the preview canvas.
+ *
+ * @param {string} asciiText - The ASCII text representation of the image.
+ * @param {HTMLCanvasElement} canvas - The canvas element to draw the preview.
+ */
+function drawPreview(asciiText: string, canvas: HTMLCanvasElement) {
+  const context = canvas.getContext("2d");
+
+  if (!context) return;
+
+  // Define the size of each square and padding
+  const squareSize = 7;
+  const padding = 3;
+  const canvasPadding = 100;
+  const totalSize = squareSize + padding;
+  const width = asciiText.split("\n")[0].length;
+  const height = asciiText.split("\n").length;
+
+  const colorMapping = {
+    a: "#d2d5d580", // Gray
+    b: "#2095f280", // Blue
+    c: "#4bae4f80", // Green
+    d: "#f2020280", // Red
+    e: "#feea3a80", // Yellow
+    f: "#ff00f080", // Pink
+    g: "#00FFFF80", // Cyan
+    h: "#80008080", // Purple
+    i: "#FFA50080", // Orange
+    j: "#00000080", // Black
+    "-": "#FFFFFF80", // Pure white for empty space
+  };
+
+  // Resize the canvas to accommodate the grid
+  canvas.width = width * totalSize + canvasPadding;
+  canvas.height = height * totalSize + canvasPadding;
+
+  // Split the ASCII grid into lines
+  const lines = asciiText.split("\n");
+
+  // Iterate through each character in the grid and draw a corresponding square
+  for (let y = 0; y < height; y++) {
+    const line = lines[y];
+    if (!line) continue;
+
+    for (let x = 0; x < width; x++) {
+      const char = line[x];
+      if (!char) continue;
+
+      // Determine the color for the square
+      const color = colorMapping[char as "a"] || "#FFFFFF";
+
+      // Calculate the position to draw the square
+      const posX = x * totalSize + canvasPadding / 2;
+      const posY = y * totalSize + canvasPadding / 2;
+
+      // Draw a filled square with the specified color
+      context.fillStyle = color;
+      context.fillRect(posX, posY, squareSize, squareSize);
+    }
+  }
+}
+
 async function processImage(image: HTMLImageElement) {
   try {
     // Resize the image if necessary (preserving aspect ratio)
@@ -173,8 +236,8 @@ async function processImage(image: HTMLImageElement) {
         const b = pixels[index + 2]; // Blue
 
         // Map the pixel color to the corresponding ASCII character
-        // line += mapColor(r, g, b);
-        line += mapColor2(r, g, b);
+        line += mapColor(r, g, b);
+        // line += mapColor2(r, g, b);
         // line += mapColor3(r, g, b);
       }
       outputGrid += line + "\n";
@@ -182,6 +245,13 @@ async function processImage(image: HTMLImageElement) {
 
     // Display the ASCII art in the output div
     document.getElementById("ascii-output")!.textContent = outputGrid;
+    const asciiOutput = document.getElementById(
+      "ascii-output"
+    ) as HTMLTextAreaElement;
+    const previewCanvas = document.getElementById(
+      "preview-canvas"
+    ) as HTMLCanvasElement;
+    drawPreview(asciiOutput.value, previewCanvas);
   } catch (error) {
     console.error("Error processing the image:", error);
   }
@@ -227,6 +297,6 @@ export const setup = () => {
     ?.addEventListener("change", handleFileUpload);
   document.addEventListener("paste", handlePaste);
   document
-    .getElementById("copy-button")
+    .getElementById("copy-btn")
     ?.addEventListener("click", copyToClipboard);
 };
