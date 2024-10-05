@@ -257,9 +257,6 @@ export const setup = () => {
       if (scale >= MAX_SIZE) {
         scaleSlider.value = `${MAX_SIZE}`;
         scaleValue.textContent = `${MAX_SIZE}px`;
-      } else if (scale >= MAX_SIZE) {
-        scaleSlider.value = `${MAX_SIZE}`;
-        scaleValue.textContent = `${MAX_SIZE}px`;
       } else scaleValue.textContent = `${scale}px`;
       updateCanvasScale(previewCanvas, scale);
     });
