@@ -4,8 +4,21 @@ import { setup } from "./functions";
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 <h1>ASCII Image Converter</h1>
 <h3>Upload an image or paste an image from the clipboard to convert it to a blueprint importable in the mod toolbar.</h3>
-<input type="file" id="file-input" accept="image/*">
 <canvas id="image-canvas" style="display:none;"></canvas>
+<section id="inputs">
+  <label for="file-input" class="button">
+    <span class="inputLabel">Upload an image</span>
+    <input type="file" id="file-input" accept="image/*">
+  </label>
+  <label for="map-select">
+    <span class="inputLabel">Color mapping:</span>
+    <select id="map-select">
+      <option value="1">Color distance</option>
+      <option value="2">Brightness</option>
+      <option value="3">HSL</option>
+    </select>
+  </label>
+</section>
 <div id="container">
   <div id="text-side">
     <textarea id="ascii-output" rows="30" cols="30"></textarea>
