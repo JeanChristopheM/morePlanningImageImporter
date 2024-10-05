@@ -42,37 +42,50 @@ const mapColor = (r: number, g: number, b: number) => {
   return closestColor;
 };
 
+/**
+ * Resizes an image if it exceeds the maximum dimensions.
+ * Otherwise, it returns the original image dimensions.
+ *
+ * @param {HTMLImageElement} image - The original image object loaded using `loadImage()`.
+ * @returns {HTMLCanvasElement} - A canvas containing the resized image, if resized; otherwise, original.
+ */
 function resizeImage(image: HTMLImageElement): HTMLCanvasElement {
+  // Define maximum dimensions
   const maxSize = 250;
 
+  // Get the original dimensions
   const originalWidth = image.width;
   const originalHeight = image.height;
 
+  // If both dimensions are within the limit, do not resize
+  if (originalWidth <= maxSize && originalHeight <= maxSize) {
+    // Create a canvas with the exact size of the image
+    const canvas = document.createElement("canvas");
+    canvas.width = originalWidth;
+    canvas.height = originalHeight;
+    const context = canvas.getContext("2d")!;
+    context.drawImage(image, 0, 0, originalWidth, originalHeight);
+    return canvas;
+  }
+
+  // Calculate the scaling factor to maintain the aspect ratio
   const scaleFactor = Math.min(
     maxSize / originalWidth,
     maxSize / originalHeight
   );
 
+  // Calculate the new dimensions based on the scale factor
   const newWidth = Math.floor(originalWidth * scaleFactor);
   const newHeight = Math.floor(originalHeight * scaleFactor);
 
-  const canvas = document.getElementById("image-canvas") as HTMLCanvasElement;
+  // Create a new canvas for the resized image
+  const canvas = document.createElement("canvas");
+  canvas.width = newWidth;
+  canvas.height = newHeight;
   const context = canvas.getContext("2d")!;
 
-  // Ensure the canvas is cleared before drawing the new image
-  canvas.width = maxSize;
-  canvas.height = maxSize;
-
-  // Fill the canvas with a white background to handle any empty space
-  context.fillStyle = "#FFFFFF";
-  context.fillRect(0, 0, maxSize, maxSize);
-
-  // Calculate the offsets to center the image on the canvas
-  const offsetX = Math.floor((maxSize - newWidth) / 2);
-  const offsetY = Math.floor((maxSize - newHeight) / 2);
-
-  // Draw the resized image at the centered position
-  context.drawImage(image, offsetX, offsetY, newWidth, newHeight);
+  // Draw the resized image onto the canvas
+  context.drawImage(image, 0, 0, newWidth, newHeight);
 
   return canvas;
 }
@@ -94,20 +107,62 @@ const handleFileUpload = (event: Event) => {
   reader.readAsDataURL(file);
 };
 
-// Function to read and process the image
+const mapColor2 = (r: number, g: number, b: number) => {
+  // Calculate the brightness using a weighted average for human perception
+  const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+
+  // Define a set of characters in increasing brightness order
+  const brightnessMapping = [
+    "j",
+    "i",
+    "h",
+    "g",
+    "f",
+    "e",
+    "d",
+    "c",
+    "b",
+    "a",
+    "-",
+  ];
+
+  // Map the brightness to one of the defined characters
+  const index = Math.floor((brightness / 255) * (brightnessMapping.length - 1));
+  return brightnessMapping[index];
+};
+
+const mapColor3 = (r: number, g: number, b: number) => {
+  // Calculate the hue using the RGB to HSL conversion formula
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let hue = 0;
+
+  if (max === min) hue = 0; // Grayscale case
+  else if (max === r) hue = (60 * ((g - b) / (max - min)) + 360) % 360;
+  else if (max === g) hue = 60 * ((b - r) / (max - min)) + 120;
+  else hue = 60 * ((r - g) / (max - min)) + 240;
+
+  // Define a set of characters to represent different hues
+  const hueMapping = ["c", "g", "b", "h", "f", "d", "e", "i", "j", "a"];
+
+  // Normalize hue to fit in the range of the defined characters
+  const index = Math.floor((hue / 360) * hueMapping.length);
+  return hueMapping[index];
+};
+
 async function processImage(image: HTMLImageElement) {
   try {
-    // Resize the image to fit within 250x250 while preserving aspect ratio
+    // Resize the image if necessary (preserving aspect ratio)
     const resizedCanvas = resizeImage(image);
     const context = resizedCanvas.getContext("2d")!;
-
-    // Extract pixel data from the resized canvas
     const width = resizedCanvas.width;
     const height = resizedCanvas.height;
+
+    // Extract pixel data from the resized canvas
     const imageData = context.getImageData(0, 0, width, height);
     const pixels = imageData.data;
 
-    // Generate the ASCII grid
+    // Generate the ASCII grid based on the image size
     let outputGrid = "";
     for (let y = 0; y < height; y++) {
       let line = "";
@@ -117,10 +172,11 @@ async function processImage(image: HTMLImageElement) {
         const g = pixels[index + 1]; // Green
         const b = pixels[index + 2]; // Blue
 
-        // Map color using the refined distance-based approach
-        line += mapColor(r, g, b);
+        // Map the pixel color to the corresponding ASCII character
+        // line += mapColor(r, g, b);
+        line += mapColor2(r, g, b);
+        // line += mapColor3(r, g, b);
       }
-      console.log(`Line ${y + 1}: ${line}`);
       outputGrid += line + "\n";
     }
 
@@ -140,11 +196,36 @@ const copyToClipboard = () => {
   }
 };
 
+const handlePaste = (event: ClipboardEvent) => {
+  const items = event.clipboardData?.items;
+  if (!items) return;
+
+  for (const item of items) {
+    // Check if the clipboard contains an image
+    if (item.type.startsWith("image")) {
+      const blob = item.getAsFile();
+      if (blob) {
+        // Read the image using FileReader
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const img = new Image();
+          img.onload = function () {
+            processImage(img);
+          };
+          img.src = e.target!.result as string;
+        };
+        reader.readAsDataURL(blob);
+      }
+    }
+  }
+};
+
 export const setup = () => {
   // Add event listener for file input
   document
     .getElementById("file-input")
     ?.addEventListener("change", handleFileUpload);
+  document.addEventListener("paste", handlePaste);
   document
     .getElementById("copy-button")
     ?.addEventListener("click", copyToClipboard);
