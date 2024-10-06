@@ -18,7 +18,6 @@
     "noUnusedLocals": false,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
-    // disable rule for unused vars in functions
   },
   "include": ["src"]
 }
