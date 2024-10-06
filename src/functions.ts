@@ -7,6 +7,40 @@ export let CURRENT_SIZE = 100;
 // . Utils
 // . ------
 /**
+ * Adjusts the contrast of the image data.
+ * @param imageData - The ImageData object containing pixel information.
+ * @param contrast - The contrast value (-255 to 255).
+ * @returns The modified ImageData with adjusted contrast.
+ */
+function adjustContrast(imageData: ImageData, contrast: number): ImageData {
+  // Calculate the contrast factor
+  const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+
+  // Extract the pixel data from the ImageData object
+  const pixels = imageData.data;
+
+  // Loop through every pixel (each pixel has 4 values: R, G, B, A)
+  for (let i = 0; i < pixels.length; i += 4) {
+    // Adjust R, G, B values using the contrast formula
+    pixels[i] = truncate(128 + (pixels[i] - 128) * factor); // Red
+    pixels[i + 1] = truncate(128 + (pixels[i + 1] - 128) * factor); // Green
+    pixels[i + 2] = truncate(128 + (pixels[i + 2] - 128) * factor); // Blue
+    // Alpha value remains unchanged
+  }
+
+  return imageData;
+}
+
+/**
+ * Helper function to ensure the values stay within the 0-255 range.
+ * @param value - The value to be truncated.
+ * @returns The truncated value between 0 and 255.
+ */
+function truncate(value: number): number {
+  return Math.min(255, Math.max(0, value));
+}
+
+/**
  * Resizes an image if it exceeds the maximum dimensions.
  * Otherwise, it returns the original image dimensions.
  *
@@ -122,7 +156,9 @@ async function processImage() {
     const mapValue = mapSelect.value;
 
     // Extract pixel data from the resized canvas
-    const imageData = context.getImageData(0, 0, width, height);
+    let imageData = context.getImageData(0, 0, width, height);
+    // Apply contrast adjustment (contrast value can range from -255 to 255)
+    // imageData = adjustContrast(imageData, 50); // Increase contrast by 50 (or use a different value)
     const pixels = imageData.data;
 
     // Generate the ASCII grid based on the image size
