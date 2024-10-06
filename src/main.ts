@@ -2,8 +2,8 @@ import "./style.scss";
 import { CURRENT_SIZE, MAX_SIZE, setup } from "./functions";
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
-<h1>ASCII Image Converter</h1>
-<h3>Upload an image or paste an image from the clipboard to convert it to a blueprint importable in the mod toolbar.</h3>
+<h1>RimWorld Image to Blueprint Converter</h1>
+<h3>Upload or paste an image to convert it into a text-based blueprint, ready to use with the "More Planning" mod in RimWorld.</h3>
 <canvas id="image-canvas" style="display:none;"></canvas>
 <section id="inputs">
   <label for="file-input" class="button">
